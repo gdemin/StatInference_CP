@@ -1,0 +1,52 @@
+---
+title: "Statistical Inference Course Project Part 2"
+output: pdf_document
+---
+
+### Intoduction
+
+In this paper we study response in the length of odontoblasts (teeth) in each of 10 guinea pigs to two delivery methods (orange juice or ascorbic acid).
+
+First of all, load dataset and compute quick summary.
+
+```{r}
+data(ToothGrowth)
+summary(ToothGrowth)
+```
+
+### Analysis
+
+We can suppose form Appendix, Fig. 1 that with bigger dose of vitamin C tooth grows faster. Another hypothesis that supplement type OJ also leads to faster tooth grows.
+
+We will use t-test it's rather robust method and samples with 20-30 cases in group are sufficient for analithis.
+
+First let's check hypothesis about supplement type with independent  t-test:
+
+```{r, echo=FALSE}
+t.test(len ~ supp, data=ToothGrowth)
+```
+P-value slightly greater than 0.05, 95% confidence interval includes zero, so at 95% level there is no difference in tooth length between different supplement type. If we will consider this problem with 90% level there is a difference exists in tooth length.
+
+Now we check difference between doses. It will be better to use ANOVA or regression but in this assignment we are limited to t-test.
+
+```{r}
+t.test(len ~ dose,data=ToothGrowth,subset = dose %in% c(0.5,1)) # test  between dose 0.5 and 1
+t.test(len ~ dose,data=ToothGrowth,subset = dose %in% c(1,2)) # test  between dose 1 and 2
+t.test(len ~ dose,data=ToothGrowth,subset = dose %in% c(0.5,2)) # test  between dose 0.5 and 2
+
+```
+P-value is far less than 0.05 so there is significant differences between tooth lens in groups with different doses. P-value is so small that even with multiple comparisons adjustments (such as Bonferroni adjustment) there will be significant difference.
+
+### Conclusion
+
+There is significant difference in the tooth length between groups with different doses of vitamin C (bigger dose - tooth length higher). But supplement type doesn't has strong influence on tooth growth.
+
+### Appendix
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(len ~ supp, data=ToothGrowth,xlab="Supplement type", ylab="Tooth length", main="Fig 1a. Tooth length vs supplement type")
+boxplot(len ~ dose, data=ToothGrowth,xlab="Dose in milligrams", ylab="Tooth length", main="Fig 1b. Tooth length vs dose")
+
+```
+

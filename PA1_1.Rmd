@@ -1,0 +1,80 @@
+---
+title: "Statistical Inference Course Project"
+output: pdf_document
+---
+
+## Intoduction
+
+The exponential distribution can be simulated in R with rexp(n, lambda) where lambda is the rate parameter. The mean of exponential distribution is 1/lambda and the standard deviation is also also 1/lambda. In this simulation, we will investigate the distribution of averages of 40 exponential(0.2)s. 
+
+```{r}
+N = 40 # number of exponential
+lambda = 0.2
+n_repetitions = 3000
+theoretical_mean = 1/lambda
+theoretical_sd = 1/lambda
+
+simulations = replicate(n_repetitions,rexp(N,lambda))
+simulated_means = apply(simulations,2,mean) # distribution of the mean of 40 exponentials 
+
+```
+
+## Distribution of simulated means
+
+```{r}
+center_of_simulated_means = mean(simulated_means)
+cat("Theoretical mean:", theoretical_mean,  "\nCenter of simulated means:", center_of_simulated_means)
+
+theoretical_sd_for_sim_means = theoretical_sd/sqrt(N)
+real_sd_simulated_means = sd(simulated_means)
+
+cat("Theoretical S.D. of simulated means:", theoretical_sd_for_sim_means,  "\nReal S.D. of simulated means:", real_sd_simulated_means)
+```
+
+We can see that theoretical mean and theoretical S.D. for simulated means are very near to the same characteristics of empirical distribution of means. This distribution of simulated means is shown on Fig. 1 in appendix. It looks like approximately normal.
+
+```{r}
+shapiro.test(simulated_means)
+shapiro.test(log(simulated_means))
+
+```
+But Shapiro test shows normality only for log-transformed distribution (p-value>0.05).
+
+## 95%-coverage
+
+Here we calculate 95% theoretical confidence interval:
+```{r}
+lo_ci = simulated_means -1*qnorm(0.975)*apply(simulations,2,sd)/sqrt(N) 
+hi_ci = simulated_means +1*qnorm(0.975)*apply(simulations,2,sd)/sqrt(N) 
+coverage = mean(theoretical_mean>lo_ci & theoretical_mean<hi_ci)
+
+cat("Coverage of 95% confidence interval:",coverage)
+```
+We can conclude that theoretical 95% coverage in this case is rather good approach. Real coverage is approximately 92%. Also see Appendix, Fig. 2. 
+
+## Conclusion
+
+We can see that theoretical means almost exactly equal to center of distribution of simulated means. Theoretical S.D. of simulated means near the real S.D. of simulated means. Distribution is looks like normal. Coverage of 95% confidence interval is 92%.
+
+
+## Appendix
+
+```{r, echo = FALSE}
+hist(simulated_means, breaks=20, main="Fig 1. Distribution of simulated mean")
+abline(v = theoretical_mean, col="blue")
+abline(v = center_of_simulated_means, col="red")
+legend("topleft", legend = c("Theoretical mean","Center of simulated means"), lty = 1, col = c("red","blue"),box.lty = 0)
+
+```
+```{r, echo = FALSE}
+rang = hi_ci - lo_ci
+a1= hi_ci[order(rang)]
+a2= lo_ci[order(rang)]
+plot(a1, ylab="Confidence interval",xlab="", ylim=c(-1,11),type="l",main="Fig 2. Coverage of 95% confidence interval",col="red")
+lines(seq_along(lo_ci),a2,col="blue")
+abline(h = theoretical_mean, col="black",lty=2,lwd=4)
+
+legend("topleft", legend = c("Hi boundary","Theorethical mean","Lo boundary"), lty = 1, col = c("red","black","blue"),box.lty = 0)
+
+```
+
